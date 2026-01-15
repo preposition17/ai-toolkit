@@ -280,14 +280,24 @@ class BaseSDTrainProcess(BaseTrainProcess):
         start_seed = sample_config.seed
         current_seed = start_seed
 
+        sample_indices = list(range(len(sample_config.samples)))
+        num_images_to_generate = sample_config.num_images_to_generate
+        if num_images_to_generate is not None and num_images_to_generate > 0:
+            if len(sample_indices) == 0:
+                return
+            if num_images_to_generate > len(sample_indices):
+                sample_indices = [random.choice(sample_indices) for _ in range(num_images_to_generate)]
+            else:
+                sample_indices = sample_indices[:num_images_to_generate]
+
         test_image_paths = []
         if self.adapter_config is not None and self.adapter_config.test_img_path is not None:
             test_image_path_list = self.adapter_config.test_img_path
-            # divide up images so they are evenly distributed across prompts
-            for i in range(len(sample_config.prompts)):
+            # divide up images so they are evenly distributed across samples
+            for i in range(len(sample_indices)):
                 test_image_paths.append(test_image_path_list[i % len(test_image_path_list)])
 
-        for i in range(len(sample_config.prompts)):
+        for i, sample_index in enumerate(sample_indices):
             if sample_config.walk_seed:
                 current_seed = start_seed + i
 
@@ -300,7 +310,8 @@ class BaseSDTrainProcess(BaseTrainProcess):
 
             output_path = os.path.join(sample_folder, filename)
 
-            prompt = sample_config.prompts[i]
+            sample_item = sample_config.samples[sample_index]
+            prompt = sample_item.prompt or ""
 
             # add embedding if there is one
             # note: diffusers will automatically expand the trigger to the number of added tokens
@@ -322,7 +333,6 @@ class BaseSDTrainProcess(BaseTrainProcess):
             if self.adapter_config is not None and self.adapter_config.test_img_path is not None:
                 extra_args['adapter_image_path'] = test_image_paths[i]
             
-            sample_item = sample_config.samples[i]
             if sample_item.seed is not None:
                 current_seed = sample_item.seed
 

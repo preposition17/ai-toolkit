@@ -92,6 +92,14 @@ class SampleConfig:
         self.refiner_start_at = kwargs.get('refiner_start_at',
                                            0.5)  # step to start using refiner on sample if it exists
         self.extra_values = kwargs.get('extra_values', [])
+        self.num_images_to_generate: Optional[int] = kwargs.get('num_images_to_generate', None)
+        if isinstance(self.num_images_to_generate, str):
+            try:
+                self.num_images_to_generate = int(self.num_images_to_generate)
+            except ValueError:
+                self.num_images_to_generate = None
+        if self.num_images_to_generate is not None and self.num_images_to_generate <= 0:
+            self.num_images_to_generate = None
         self.num_frames = kwargs.get('num_frames', 1)
         self.fps: int = kwargs.get('fps', 16)
         if self.num_frames > 1 and self.ext not in ['webp']:

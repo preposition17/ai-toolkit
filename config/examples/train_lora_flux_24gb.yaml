@@ -90,6 +90,7 @@ config:
         walk_seed: true
         guidance_scale: 4
         sample_steps: 20
+        num_images_to_generate: 12  # optional; if > prompts, prompts are sampled randomly to reach the count
 # you can add any additional meta info here. [name] is replaced with config name at top
 meta:
   name: "[name]"
